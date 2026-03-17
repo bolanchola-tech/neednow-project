@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 // ⚠️ UPDATE THIS to your Computer's Network IP
-const API = "http://localhost:5000/api"; 
+const API = "https://neednow-backend-xxxx.onrender.com/api";
 
 export default function App() {
   const [needs, setNeeds] = useState([]);
