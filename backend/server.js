@@ -10,7 +10,7 @@ app.use(cors());
 app.use(express.json());
 
 // 2. THE KEY: Put your real Tavily API Key between the quotes below
-const TAVILY_API_KEY = "tvly-YOUR_ACTUAL_API_KEY_HERE";
+
 
 // 3. THE ENGINE: This handles the search
 app.post('/api/needs', async (req, res) => {
