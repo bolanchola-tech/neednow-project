@@ -87,13 +87,14 @@ export default function App() {
         <div className="relative">
           <div className="absolute inset-0 bg-orange-500/10 blur-2xl rounded-full"></div>
           <img src="/Logo2.jpg" className="relative w-32 h-32 object-contain rounded-2xl shadow-2xl" 
-               onError={(e) => e.target.src = "https://placehold.co/150x150/111/fff?text=NeedNow"} />
+               onError={(e) => e.target.src = "https://placehold.co/150x150/111/fff?text=NeedNow"} alt="Logo" />
         </div>
       </header>
 
       <main className="p-6">
         {!selectedNeed ? (
           <div className="animate-in fade-in duration-500">
+            {/* SEARCH INPUT AREA */}
             <div className="bg-white/5 p-6 rounded-[2rem] border border-white/10 mb-8 backdrop-blur-md">
               <textarea 
                 className="w-full bg-transparent border-none focus:ring-0 text-lg placeholder:text-gray-800 text-gray-200"
@@ -106,13 +107,9 @@ export default function App() {
               </button>
             </div>
 
-            <div className="space-y-3">
-              <h3 className="text-[10px] font-bold text-gray-600 uppercase tracking-widest ml-2">Active Signals</h3>
-              {/* MAIN RESULTS LIST */}
-        {!selectedNeed ? (
-          <div className="animate-in fade-in duration-500">
-            <h2 className="text-[10px] font-black tracking-[0.2em] text-gray-500 uppercase mb-6 ml-1">Active Signals</h2>
+            {/* RESULTS LIST */}
             <div className="space-y-4">
+              <h2 className="text-[10px] font-black tracking-[0.2em] text-gray-500 uppercase mb-6 ml-1 text-center">Active Signals</h2>
               {needs.map((n) => (
                 <div 
                   key={n.id} 
@@ -144,7 +141,7 @@ export default function App() {
             </div>
           </div>
         ) : (
-          /* DETAIL / MATCHES VIEW (When you click a card) */
+          /* DETAIL VIEW */
           <div className="animate-in slide-in-from-right duration-300">
             <button onClick={() => setSelectedNeed(null)} className="mb-8 text-orange-500 font-bold text-[10px] tracking-widest uppercase flex items-center gap-2">
               <span>←</span> Back to Hub
@@ -156,7 +153,7 @@ export default function App() {
               </p>
               <button 
                 onClick={() => {
-                  const text = `NeedNow Found: ${selectedNeed.title} - ${selectedNeed.link}`;
+                  const text = `NeedNow Found: ${selectedNeed.title || selectedNeed.text} - ${selectedNeed.link || ''}`;
                   window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
                 }}
                 className="w-full bg-black text-orange-500 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:scale-[1.02] transition-all"
@@ -170,3 +167,5 @@ export default function App() {
     </div>
   );
 }
+
+export default App;
