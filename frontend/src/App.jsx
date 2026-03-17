@@ -27,6 +27,7 @@ function App() {
     setLoading(true);
     try {
       const response = await axios.post(`${API}/needs`, { text: input });
+      // IMPORTANT: Axios returns the data in response.data
       setNeeds(response.data); 
       setInput("");
     } catch (e) { 
