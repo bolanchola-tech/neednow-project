@@ -60,9 +60,17 @@ export default function App() {
   const addNeed = async () => {
     if (!input) return;
     try {
-      await axios.post(`${API}/needs`, { text: input });
+      // 1. Send the search term to your Render backend
+      const response = await axios.post(`${API}/needs`, { text: input });
+      
+      // 2. Take the real results from the internet and put them in your cards
+      setNeeds(response.data); 
+      
+      // 3. Clear the search box so you can type something else
       setInput("");
-    } catch (e) { console.error("Post failed"); }
+    } catch (e) { 
+      console.error("Search failed:", e); 
+    }
   };
 
   const deleteNeed = async (id, e) => {
@@ -101,16 +109,36 @@ export default function App() {
             <div className="space-y-3">
               <h3 className="text-[10px] font-bold text-gray-600 uppercase tracking-widest ml-2">Active Signals</h3>
               {needs.map((n) => (
-                <div key={n.id} 
-                     onClick={() => { setSelectedNeed(n); axios.get(`${API}/matches/${n.id}`).then(r => setMatches(r.data)); }}
-                     className={`bg-[#121214] p-5 rounded-2xl border flex justify-between items-center active:bg-white/5 transition-all ${getSignalColor(n.text)}`}>
-                  <div className="truncate">
-                    <p className="font-bold text-gray-300 truncate pr-4">{n.text}</p>
-                    <p className="text-[9px] text-gray-500 uppercase mt-1">Tracking...</p>
-                  </div>
-                  <button onClick={(e) => deleteNeed(n.id, e)} className="text-gray-700 hover:text-red-500 px-2">✕</button>
-                </div>
-              ))}
+  <div key={n.id} className="bg-orange-500 p-6 rounded-3xl text-black mb-4 shadow-xl border-none">
+    {/* The Headline from the Website */}
+    <h3 className="font-black text-xl uppercase leading-tight mb-2 tracking-tighter">
+      {n.title}
+    </h3>
+    
+    {/* The Summary of the result */}
+    <p className="text-[10px] font-bold uppercase mb-4 opacity-80 leading-relaxed italic line-clamp-3">
+      {n.description}
+    </p>
+
+    <div className="flex gap-2">
+      {/* Button to Visit the Website */}
+      <button 
+        onClick={() => window.open(n.link, '_blank')}
+        className="flex-1 bg-black/20 hover:bg-black/30 py-4 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all"
+      >
+        View Full Source
+      </button>
+
+      {/* Delete button to remove this specific search result */}
+      <button 
+        onClick={(e) => { e.stopPropagation(); deleteNeed(n.id, e); }}
+        className="px-5 bg-black/10 hover:bg-red-500/20 rounded-xl font-black text-[10px] transition-all"
+      >
+        ✕
+      </button>
+    </div>
+  </div>
+))}
             </div>
           </div>
         ) : (
