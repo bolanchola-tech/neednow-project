@@ -108,62 +108,64 @@ export default function App() {
 
             <div className="space-y-3">
               <h3 className="text-[10px] font-bold text-gray-600 uppercase tracking-widest ml-2">Active Signals</h3>
+              {/* MAIN RESULTS LIST */}
+        {!selectedNeed ? (
+          <div className="animate-in fade-in duration-500">
+            <h2 className="text-[10px] font-black tracking-[0.2em] text-gray-500 uppercase mb-6 ml-1">Active Signals</h2>
+            <div className="space-y-4">
               {needs.map((n) => (
-  <div key={n.id} className="bg-orange-500 p-6 rounded-3xl text-black mb-4 shadow-xl border-none">
-    {/* The Headline from the Website */}
-    <h3 className="font-black text-xl uppercase leading-tight mb-2 tracking-tighter">
-      {n.title}
-    </h3>
-    
-    {/* The Summary of the result */}
-    <p className="text-[10px] font-bold uppercase mb-4 opacity-80 leading-relaxed italic line-clamp-3">
-      {n.description}
-    </p>
-
-    <div className="flex gap-2">
-      {/* Button to Visit the Website */}
-      <button 
-        onClick={() => window.open(n.link, '_blank')}
-        className="flex-1 bg-black/20 hover:bg-black/30 py-4 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all"
-      >
-        View Full Source
-      </button>
-
-      {/* Delete button to remove this specific search result */}
-      <button 
-        onClick={(e) => { e.stopPropagation(); deleteNeed(n.id, e); }}
-        className="px-5 bg-black/10 hover:bg-red-500/20 rounded-xl font-black text-[10px] transition-all"
-      >
-        ✕
-      </button>
-    </div>
-  </div>
-))}
+                <div 
+                  key={n.id} 
+                  onClick={() => setSelectedNeed(n)}
+                  className="bg-orange-500 p-6 rounded-3xl text-black mb-4 shadow-xl cursor-pointer active:scale-95 transition-all"
+                >
+                  <h3 className="font-black text-xl uppercase leading-tight mb-2 tracking-tighter">
+                    {n.title || n.text || "Signal Found"}
+                  </h3>
+                  <p className="text-[11px] font-bold uppercase mb-4 opacity-80 leading-snug line-clamp-3 italic">
+                    {n.description || "Tap to view search details..."}
+                  </p>
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); window.open(n.link, '_blank'); }}
+                      className="flex-1 bg-black/10 hover:bg-black/20 py-4 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all"
+                    >
+                      View Full Source
+                    </button>
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); deleteNeed(n.id, e); }}
+                      className="px-5 bg-black/5 hover:bg-red-500/10 rounded-xl font-black text-[10px]"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         ) : (
+          /* DETAIL / MATCHES VIEW (When you click a card) */
           <div className="animate-in slide-in-from-right duration-300">
-            <button onClick={() => setSelectedNeed(null)} className="mb-8 text-orange-500 font-bold text-[10px] tracking-widest uppercase">← Back to Hub</button>
-            <div className="space-y-4">
-              {matches.map((m) => (
-                <div key={m.id} className="bg-gradient-to-br from-orange-600 to-orange-400 text-black p-6 rounded-3xl shadow-lg">
-                  <p className="font-black text-xl leading-tight mb-2">{m.text}</p>
-                  <p className="text-[10px] font-bold uppercase opacity-80 italic">Verified Match Found</p>
-                  <button 
-                    onClick={() => {
-                      const text = `NeedNow Found a Match: ${m.text}`;
-                      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
-                    }}
-                    className="mt-4 w-full bg-black/20 text-black py-2 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-black/40 transition-all border border-black/10"
-                  >
-                    Share to WhatsApp
-                  </button>
-                </div>
-              ))}
+            <button onClick={() => setSelectedNeed(null)} className="mb-8 text-orange-500 font-bold text-[10px] tracking-widest uppercase flex items-center gap-2">
+              <span>←</span> Back to Hub
+            </button>
+            <div className="bg-orange-500 p-8 rounded-[40px] text-black shadow-2xl">
+              <h2 className="font-black text-2xl uppercase leading-tight mb-4">{selectedNeed.title || selectedNeed.text}</h2>
+              <p className="text-sm font-bold opacity-90 leading-relaxed mb-6">
+                {selectedNeed.description || "Real-time match found via Tavily Search."}
+              </p>
+              <button 
+                onClick={() => {
+                  const text = `NeedNow Found: ${selectedNeed.title} - ${selectedNeed.link}`;
+                  window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+                }}
+                className="w-full bg-black text-orange-500 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:scale-[1.02] transition-all"
+              >
+                Share to WhatsApp
+              </button>
             </div>
           </div>
         )}
       </main>
     </div>
   );
-}
