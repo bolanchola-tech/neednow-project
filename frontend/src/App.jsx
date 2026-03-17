@@ -1,75 +1,38 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-// ⚠️ UPDATE THIS to your Computer's Network IP
-const API = "https://neednow-project.onrender.com/api";
+const API = "https://neednow-backend.onrender.com/api"; // Ensure this matches your Render URL
 
-export default function App() {
-  const [needs, setNeeds] = useState([]);
+function App() {
   const [input, setInput] = useState("");
+  const [needs, setNeeds] = useState([]);
   const [selectedNeed, setSelectedNeed] = useState(null);
-  const [matches, setMatches] = useState([]);
-  const [seenMatchIds, setSeenMatchIds] = useState(new Set());
+  const [loading, setLoading] = useState(false);
 
-  const getSignalColor = (text) => {
-    const t = text.toLowerCase();
-    if (t.includes('film') || t.includes('video')) return 'border-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.2)]';
-    if (t.includes('fund') || t.includes('money') || t.includes('grant')) return 'border-green-500 shadow-[0_0_15px_rgba(34,197,94,0.2)]';
-    if (t.includes('ai') || t.includes('tech')) return 'border-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.2)]';
-    return 'border-white/5';
-  };
-
-  const playPing = () => {
-    const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
-    audio.volume = 0.4;
-    audio.play().catch(() => console.log("Waiting for user tap for sound"));
-  };
-
+  // Load existing needs on startup
   useEffect(() => {
-    const syncData = async () => {
+    const fetchNeeds = async () => {
       try {
-        const res = await axios.get(`${API}/needs`);
-        const currentNeeds = res.data || [];
-        setNeeds(currentNeeds);
-
-        let foundNew = false;
-        const updatedSeenIds = new Set(seenMatchIds);
-
-        for (const need of currentNeeds) {
-          const mRes = await axios.get(`${API}/matches/${need.id}`);
-          mRes.data.forEach(match => {
-            if (!updatedSeenIds.has(match.id)) {
-              updatedSeenIds.add(match.id);
-              foundNew = true;
-            }
-          });
-        }
-
-        if (foundNew) {
-          setSeenMatchIds(updatedSeenIds);
-          if (seenMatchIds.size > 0) playPing();
-        }
-      } catch (e) { console.log("Signal lost..."); }
+        const response = await axios.get(`${API}/needs`);
+        setNeeds(response.data);
+      } catch (e) {
+        console.error("Failed to fetch needs", e);
+      }
     };
-
-    syncData();
-    const interval = setInterval(syncData, 5000);
-    return () => clearInterval(interval);
-  }, [seenMatchIds]);
+    fetchNeeds();
+  }, []);
 
   const addNeed = async () => {
     if (!input) return;
+    setLoading(true);
     try {
-      // 1. Send the search term to your Render backend
       const response = await axios.post(`${API}/needs`, { text: input });
-      
-      // 2. Take the real results from the internet and put them in your cards
       setNeeds(response.data); 
-      
-      // 3. Clear the search box so you can type something else
       setInput("");
     } catch (e) { 
       console.error("Search failed:", e); 
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -94,7 +57,6 @@ export default function App() {
       <main className="p-6">
         {!selectedNeed ? (
           <div className="animate-in fade-in duration-500">
-            {/* SEARCH INPUT AREA */}
             <div className="bg-white/5 p-6 rounded-[2rem] border border-white/10 mb-8 backdrop-blur-md">
               <textarea 
                 className="w-full bg-transparent border-none focus:ring-0 text-lg placeholder:text-gray-800 text-gray-200"
@@ -103,11 +65,10 @@ export default function App() {
                 onChange={(e) => setInput(e.target.value)}
               />
               <button onClick={addNeed} className="w-full mt-4 bg-orange-500 text-black py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest active:scale-95 transition-all">
-                Initialize Tracker
+                {loading ? "Searching..." : "Initialize Tracker"}
               </button>
             </div>
 
-            {/* RESULTS LIST */}
             <div className="space-y-4">
               <h2 className="text-[10px] font-black tracking-[0.2em] text-gray-500 uppercase mb-6 ml-1 text-center">Active Signals</h2>
               {needs.map((n) => (
@@ -124,14 +85,14 @@ export default function App() {
                   </p>
                   <div className="flex gap-2">
                     <button 
-                      onClick={(e) => { e.stopPropagation(); window.open(n.link, '_blank'); }}
+                      onClick={(e) => { e.stopPropagation(); if(n.link) window.open(n.link, '_blank'); }}
                       className="flex-1 bg-black/10 hover:bg-black/20 py-4 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all"
                     >
                       View Full Source
                     </button>
                     <button 
                       onClick={(e) => { e.stopPropagation(); deleteNeed(n.id, e); }}
-                      className="px-5 bg-black/5 hover:bg-red-500/10 rounded-xl font-black text-[10px]"
+                      className="px-5 bg-black/5 hover:bg-black/10 rounded-xl font-black text-[10px]"
                     >
                       ✕
                     </button>
@@ -141,7 +102,6 @@ export default function App() {
             </div>
           </div>
         ) : (
-          /* DETAIL VIEW */
           <div className="animate-in slide-in-from-right duration-300">
             <button onClick={() => setSelectedNeed(null)} className="mb-8 text-orange-500 font-bold text-[10px] tracking-widest uppercase flex items-center gap-2">
               <span>←</span> Back to Hub
@@ -153,8 +113,8 @@ export default function App() {
               </p>
               <button 
                 onClick={() => {
-                  const text = `NeedNow Found: ${selectedNeed.title || selectedNeed.text} - ${selectedNeed.link || ''}`;
-                  window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+                  const shareText = `NeedNow Found: ${selectedNeed.title || selectedNeed.text} - ${selectedNeed.link || ''}`;
+                  window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, '_blank');
                 }}
                 className="w-full bg-black text-orange-500 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:scale-[1.02] transition-all"
               >
