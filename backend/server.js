@@ -17,21 +17,13 @@ app.use(express.json());
 
 const TAVILY_API_KEY = process.env.TAVILY_API_KEY;
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-async function scoreResult(searchText, result) {
-  try {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-    const prompt = `Score how relevant this search result is to the search query.
-Search query: "${searchText}"
-Result title: "${result.title}"
-Result description: "${result.description}"
-
-Reply with ONLY a number between 0 and 100. No explanation. Just the number.`;
-    const response = await model.generateContent(prompt);
-    const score = parseInt(response.response.text().trim());
-    return isNaN(score) ? 50 : Math.min(100, Math.max(0, score));
-  } catch (e) {
-    return 50;
-  }
+function scoreResult(searchText, result) {
+  const keywords = searchText.toLowerCase().split(' ')
+    .filter(w => w.length > 2);
+  const text = `${result.title} ${result.description}`.toLowerCase();
+  const matches = keywords.filter(k => text.includes(k)).length;
+  const score = Math.round((matches / keywords.length) * 100);
+  return Math.min(100, Math.max(10, score));
 }
 
 app.get('/api/needs', (req, res) => {
