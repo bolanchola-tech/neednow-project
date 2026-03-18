@@ -8,6 +8,7 @@ function App() {
   const [needs, setNeeds] = useState([]);
   const [selectedNeed, setSelectedNeed] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   // Load existing needs on startup
   useEffect(() => {
@@ -31,11 +32,11 @@ function App() {
       setNeeds(response.data); 
       setInput("");
     } catch (e) { 
-      console.error("Search failed:", e); 
-    } finally {
-      setLoading(false);
-    }
-  };
+  console.error("Search failed:", e);
+  setError("Could not connect. The server may be waking up — try again in 30 seconds.");
+} finally {
+  setLoading(false);
+}
 
   const deleteNeed = async (id, e) => {
     e.stopPropagation();
@@ -59,6 +60,7 @@ function App() {
         {!selectedNeed ? (
           <div className="animate-in fade-in duration-500">
             <div className="bg-white/5 p-6 rounded-[2rem] border border-white/10 mb-8 backdrop-blur-md">
+              {error && <p className="text-red-400 text-xs text-center mb-4">{error}</p>}
               <textarea 
                 className="w-full bg-transparent border-none focus:ring-0 text-lg placeholder:text-gray-800 text-gray-200"
                 placeholder="Broadcast your intent..."
@@ -72,7 +74,13 @@ function App() {
 
             <div className="space-y-4">
               <h2 className="text-[10px] font-black tracking-[0.2em] text-gray-500 uppercase mb-6 ml-1 text-center">Active Signals</h2>
-              {needs.map((n) => (
+              <div className="space-y-4">
+  <h2 className="text-[10px] font-black tracking-[0.2em] text-gray-500 uppercase mb-6 ml-1 text-center">Active Signals</h2>
+  {needs.length === 0 && (
+    <p className="text-center text-gray-600 text-sm mt-12">No active signals. Type something above to start.</p>
+  )}
+  {needs.map((n) => (
+              
                 <div 
                   key={n.id} 
                   onClick={() => setSelectedNeed(n)}
