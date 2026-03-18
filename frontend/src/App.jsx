@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const API = "https://neednow-backend.onrender.com/api"; // Ensure this matches your Render URL
+const API = "https://neednow-project.onrender.com/api";
 
 function App() {
   const [input, setInput] = useState("");
