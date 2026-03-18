@@ -6,7 +6,7 @@ const API = "https://neednow-project.onrender.com/api";
 function App() {
   const [input, setInput] = useState("");
   const [needs, setNeeds] = useState([]);
-  const [selectedNeed, setSelectedNeed] = useState(null);
+  const [expandedId, setExpandedId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -25,9 +25,11 @@ function App() {
   const addNeed = async () => {
     if (!input.trim()) return;
     setLoading(true);
+    setError("");
     try {
       const response = await axios.post(`${API}/needs`, { text: input });
-      setNeeds(response.data);
+      setNeeds(prev => [response.data, ...prev]);
+      setExpandedId(response.data.id);
       setInput("");
     } catch (e) {
       console.error("Search failed:", e);
@@ -42,9 +44,14 @@ function App() {
     try {
       await axios.delete(`${API}/needs/${id}`);
       setNeeds(prev => prev.filter(n => n.id !== id));
+      if (expandedId === id) setExpandedId(null);
     } catch (err) {
       console.error("Delete failed");
     }
+  };
+
+  const toggleExpand = (id) => {
+    setExpandedId(prev => prev === id ? null : id);
   };
 
   return (
@@ -58,85 +65,83 @@ function App() {
       </header>
 
       <main className="p-6">
-        {!selectedNeed ? (
-          <div className="animate-in fade-in duration-500">
-            <div className="bg-white/5 p-6 rounded-[2rem] border border-white/10 mb-8 backdrop-blur-md">
-              {error && <p className="text-red-400 text-xs text-center mb-4">{error}</p>}
-              <textarea
-                className="w-full bg-transparent border-none focus:ring-0 text-lg placeholder:text-gray-600 text-gray-200"
-                placeholder="What do you need?"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); addNeed(); }}}
-              />
-              <button onClick={addNeed} className="w-full mt-4 bg-orange-500 text-black py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest active:scale-95 transition-all">
-                {loading ? "Searching..." : "Start Looking"}
-              </button>
-            </div>
+        <div className="animate-in fade-in duration-500">
+          <div className="bg-white/5 p-6 rounded-[2rem] border border-white/10 mb-8 backdrop-blur-md">
+            {error && <p className="text-red-400 text-xs text-center mb-4">{error}</p>}
+            <textarea
+              className="w-full bg-transparent border-none focus:ring-0 text-lg placeholder:text-gray-600 text-gray-200"
+              placeholder="What do you need?"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); addNeed(); }}}
+            />
+            <button onClick={addNeed} className="w-full mt-4 bg-orange-500 text-black py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest active:scale-95 transition-all">
+              {loading ? "Searching..." : "Start Looking"}
+            </button>
+          </div>
 
-            <div className="space-y-4">
-              <h2 className="text-[10px] font-black tracking-[0.2em] text-gray-500 uppercase mb-6 ml-1 text-center flex items-center justify-center gap-2">
-  <span className="relative flex h-2 w-2">
-    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-    <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-  </span>
-  Currently Finding
-</h2>
-              {needs.length === 0 && (
-                <p className="text-center text-gray-600 text-sm mt-12">No active signals. Type something above to start.</p>
-              )}
-              {needs.map((n) => (
+          <div className="space-y-3">
+            <h2 className="text-[10px] font-black tracking-[0.2em] text-gray-500 uppercase mb-6 ml-1 text-center flex items-center justify-center gap-2">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+              </span>
+              Currently Finding
+            </h2>
+
+            {needs.length === 0 && (
+              <p className="text-center text-gray-600 text-sm mt-12">No active signals. Type something above to start.</p>
+            )}
+
+            {needs.map((n) => (
+              <div key={n.id} className="rounded-2xl border border-white/10 overflow-hidden">
+                
+                {/* Collapsed row — search phrase + toggle + delete */}
                 <div
-                  key={n.id}
-                  onClick={() => setSelectedNeed(n)}
-                  className="bg-orange-500 p-6 rounded-3xl text-black mb-4 shadow-xl cursor-pointer active:scale-95 transition-all"
+                  onClick={() => toggleExpand(n.id)}
+                  className="flex items-center justify-between p-4 cursor-pointer hover:bg-white/5 transition-all"
                 >
-                  <h3 className="font-black text-xl uppercase leading-tight mb-2 tracking-tighter">
-                    {n.title || n.text || "Signal Found"}
-                  </h3>
-                  <p className="text-[11px] font-bold uppercase mb-4 opacity-80 leading-snug line-clamp-3 italic">
-                    {n.description || "Tap to view search details..."}
+                  <p className="text-sm font-bold text-gray-200 truncate flex-1 mr-3">
+                    {n.searchText}
                   </p>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={(e) => { e.stopPropagation(); if (n.link) window.open(n.link, '_blank'); }}
-                      className="flex-1 bg-black/10 hover:bg-black/20 py-4 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all"
-                    >
-                      View Full Source
-                    </button>
+                  <div className="flex items-center gap-2">
+                    <span className="text-gray-500 text-xs">{expandedId === n.id ? "▲" : "▼"}</span>
                     <button
                       onClick={(e) => deleteNeed(n.id, e)}
-                      className="px-5 bg-black/5 hover:bg-black/10 rounded-xl font-black text-[10px]"
+                      className="text-gray-600 hover:text-red-400 px-2 py-1 text-xs transition-all"
                     >
                       ✕
                     </button>
                   </div>
                 </div>
-              ))}
-            </div>
+
+                {/* Expanded results */}
+                {expandedId === n.id && (
+                  <div className="border-t border-white/10 p-4 space-y-3">
+                    {n.results && n.results.length > 0 ? (
+                      n.results.map((result) => (
+                        <div
+                          key={result.id}
+                          onClick={() => { if (result.link) window.open(result.link, '_blank'); }}
+                          className="bg-white/5 p-4 rounded-xl cursor-pointer hover:bg-white/10 transition-all border border-white/5"
+                        >
+                          <h3 className="font-bold text-sm text-orange-400 leading-tight mb-1">
+                            {result.title}
+                          </h3>
+                          <p className="text-xs text-gray-400 leading-relaxed line-clamp-3">
+                            {result.description}
+                          </p>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-gray-600 text-xs text-center">No results found.</p>
+                    )}
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
-        ) : (
-          <div className="animate-in slide-in-from-right duration-300">
-            <button onClick={() => setSelectedNeed(null)} className="mb-8 text-orange-500 font-bold text-[10px] tracking-widest uppercase flex items-center gap-2">
-              <span>←</span> Back to Hub
-            </button>
-            <div className="bg-orange-500 p-8 rounded-[40px] text-black shadow-2xl">
-              <h2 className="font-black text-2xl uppercase leading-tight mb-4">{selectedNeed.title || selectedNeed.text}</h2>
-              <p className="text-sm font-bold opacity-90 leading-relaxed mb-6">
-                {selectedNeed.description || "Real-time match found via Tavily Search."}
-              </p>
-              <button
-                onClick={() => {
-                  const shareText = `NeedNow Found: ${selectedNeed.title || selectedNeed.text} - ${selectedNeed.link || ''}`;
-                  window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, '_blank');
-                }}
-                className="w-full bg-black text-orange-500 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:scale-[1.02] transition-all"
-              >
-                Share to WhatsApp
-              </button>
-            </div>
-          </div>
-        )}
+        </div>
       </main>
     </div>
   );
