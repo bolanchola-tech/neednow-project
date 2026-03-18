@@ -54,7 +54,10 @@ app.post('/api/needs', async (req, res) => {
     res.json([]); 
   }
 });
-
+// 5. DELETE A NEED
+app.delete('/api/needs/:id', (req, res) => {
+  res.json({ success: true });
+});
 // 5. THE POWER
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
