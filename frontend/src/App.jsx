@@ -61,10 +61,13 @@ function App() {
   return (
     <div className="max-w-md mx-auto min-h-screen bg-[#0a0a0c] text-white pb-20 font-sans">
       <header className="pt-12 pb-8 flex flex-col items-center sticky top-0 z-10 bg-[#0a0a0c]/90 backdrop-blur-xl border-b border-white/5">
-        <div className="relative">
-          <div className="absolute inset-0 bg-cyan-500/10 blur-2xl rounded-full"></div>
-          <img src="/Logo2.jpg" className="relative w-32 h-32 object-contain rounded-2xl shadow-2xl"
-               onError={(e) => e.target.src = "https://placehold.co/150x150/111/fff?text=NeedNow"} alt="Logo" />
+        <div className="flex flex-col items-center">
+          <div className="relative">
+            <div className="absolute inset-0 bg-cyan-500/10 blur-2xl rounded-full"></div>
+            <img src="/Logo2.jpg" className="relative w-40 h-40 object-contain rounded-2xl shadow-2xl"
+                 onError={(e) => e.target.src = "https://placehold.co/150x150/111/fff?text=NeedNow"} alt="Logo" />
+          </div>
+          <p className="mt-4 text-xs font-bold text-gray-500 tracking-widest uppercase text-center">I'm Your Servant On The Streets</p>
         </div>
       </header>
 
@@ -79,7 +82,7 @@ function App() {
               {error && <p className="text-red-400 text-xs text-center mb-4">{error}</p>}
               <textarea
                 className="w-full bg-[#13131f] border border-cyan-500/20 focus:border-cyan-400/60 focus:ring-0 text-lg placeholder:text-gray-600 text-gray-100 rounded-xl p-4 resize-none transition-all"
-                placeholder="What do you need?"
+               placeholder="What can I find for you while you sleep?"
                 rows={3}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
@@ -90,7 +93,7 @@ function App() {
                 className="w-full mt-4 py-4 rounded-2xl font-black uppercase text-[11px] tracking-widest active:scale-95 transition-all relative overflow-hidden"
                 style={{background: 'linear-gradient(135deg, #06b6d4, #8b5cf6, #ec4899)'}}
               >
-                <span className="relative z-10">{loading ? "Scanning..." : "Start Looking"}</span>
+                <span className="relative z-10">{loading ? "On my way..." : "Send Me"}</span>
               </button>
             </div>
           </div>
@@ -102,11 +105,11 @@ function App() {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
               </span>
-              Currently Finding
+              Still On The Streets For You
             </h2>
 
             {needs.length === 0 && (
-              <p className="text-center text-gray-700 text-sm mt-12">No active signals. Type something above to start.</p>
+              <p className="text-center text-gray-700 text-sm mt-12">I'm ready. What do you want me to find?.</p>
             )}
 
             {needs.map((n, index) => {
