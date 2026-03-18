@@ -125,12 +125,21 @@ function App() {
                           onClick={() => { if (result.link) window.open(result.link, '_blank'); }}
                           className="bg-white/5 p-4 rounded-xl cursor-pointer hover:bg-white/10 transition-all border border-white/5"
                         >
-                          <h3 className="font-bold text-sm text-orange-400 leading-tight mb-1">
-                            {result.title}
-                          </h3>
-                          <p className="text-xs text-gray-400 leading-relaxed line-clamp-3">
-                            {result.description}
-                          </p>
+                          <div className="flex items-center justify-between mb-1">
+  <h3 className="font-bold text-sm text-orange-400 leading-tight flex-1 mr-2">
+    {result.title}
+  </h3>
+  <span className={`text-xs font-black px-2 py-1 rounded-full ${
+    result.relevance >= 80 ? 'bg-green-500/20 text-green-400' :
+    result.relevance >= 50 ? 'bg-orange-500/20 text-orange-400' :
+    'bg-gray-500/20 text-gray-400'
+  }`}>
+    {result.relevance}%
+  </span>
+</div>
+<p className="text-xs text-gray-400 leading-relaxed line-clamp-3">
+  {result.description}
+</p>
                         </div>
                       ))
                     ) : (
