@@ -3,6 +3,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 const app = express();
 let storedNeeds = [];
@@ -15,6 +16,23 @@ app.use(cors({
 app.use(express.json());
 
 const TAVILY_API_KEY = process.env.TAVILY_API_KEY;
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+async function scoreResult(searchText, result) {
+  try {
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const prompt = `Score how relevant this search result is to the search query.
+Search query: "${searchText}"
+Result title: "${result.title}"
+Result description: "${result.description}"
+
+Reply with ONLY a number between 0 and 100. No explanation. Just the number.`;
+    const response = await model.generateContent(prompt);
+    const score = parseInt(response.response.text().trim());
+    return isNaN(score) ? 50 : Math.min(100, Math.max(0, score));
+  } catch (e) {
+    return 50;
+  }
+}
 
 app.get('/api/needs', (req, res) => {
   res.json(storedNeeds);
@@ -32,12 +50,20 @@ app.post('/api/needs', async (req, res) => {
       max_results: 5
     });
 
-    const formattedResults = response.data.results.map(result => ({
-      id: Math.random().toString(36).substr(2, 9),
-      title: result.title,
-      description: result.content,
-      link: result.url
-    }));
+    const scoredResults = await Promise.all(
+      response.data.results.map(async (result) => {
+        const relevance = await scoreResult(text, result);
+        return {
+          id: Math.random().toString(36).substr(2, 9),
+          title: result.title,
+          description: result.content,
+          link: result.url,
+          relevance
+        };
+      })
+    );
+
+    const formattedResults = scoredResults.sort((a, b) => b.relevance - a.relevance);
 
     const need = {
       id: Math.random().toString(36).substr(2, 9),

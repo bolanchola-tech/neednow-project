@@ -12,6 +12,7 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@tavily/core": "^0.7.2",
     "axios": "^1.13.6",
     "cors": "^2.8.6",
