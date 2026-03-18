@@ -75,7 +75,13 @@ function App() {
             </div>
 
             <div className="space-y-4">
-              <h2 className="text-[10px] font-black tracking-[0.2em] text-gray-500 uppercase mb-6 ml-1 text-center">Currently Finding</h2>
+              <h2 className="text-[10px] font-black tracking-[0.2em] text-gray-500 uppercase mb-6 ml-1 text-center flex items-center justify-center gap-2">
+  <span className="relative flex h-2 w-2">
+    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+    <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+  </span>
+  Currently Finding
+</h2>
               {needs.length === 0 && (
                 <p className="text-center text-gray-600 text-sm mt-12">No active signals. Type something above to start.</p>
               )}
