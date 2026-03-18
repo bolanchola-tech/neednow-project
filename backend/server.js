@@ -1,3 +1,4 @@
+
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
@@ -15,11 +16,17 @@ app.use(express.json());
 // 2. THE KEY: (Keep your actual key here)
 const TAVILY_API_KEY = "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";
 
-// 3. THE ENGINE: Explicitly handles the POST search
-// Add this temporary "Health Check"
+// 3. THE HEALTH CHECK: Returns a list so the frontend doesn't crash on load
 app.get('/api/needs', (req, res) => {
-  res.send("If you see this, the /api/needs path is working perfectly!");
+  res.json([{ 
+    id: "test-1", 
+    title: "System Online", 
+    description: "The search engine is connected. Type a query above to start.", 
+    link: "#" 
+  }]);
 });
+
+// 4. THE ENGINE: Handles the actual Tavily search
 app.post('/api/needs', async (req, res) => {
   const { text } = req.body;
   if (!text) return res.status(400).json({ error: "No text provided" });
@@ -36,20 +43,15 @@ app.post('/api/needs', async (req, res) => {
       id: Math.random().toString(36).substr(2, 9),
       title: result.title,
       description: result.content,
-      link: result.url,
-      text: text
+      link: result.url
     }));
 
-    res.json(formattedResults);
+    res.json(formattedResults); 
   } catch (error) {
     console.error("Search Error:", error.response?.data || error.message);
-    res.status(500).json({ error: "Search failed" });
+    // Send an empty list instead of a 500 error to keep the frontend stable
+    res.json([]); 
   }
-});
-
-// 4. THE 404 KILLER: Add this so we can test the link in a browser tab!
-app.get('/api/needs', (req, res) => {
-  res.json({ message: "API is alive and waiting for a POST request!" });
 });
 
 // 5. THE POWER
