@@ -1,3 +1,4 @@
+require('dotenv').config();
 
 const express = require('express');
 const cors = require('cors');
@@ -14,7 +15,7 @@ app.use(cors({
 app.use(express.json());
 
 // 2. THE KEY: (Keep your actual key here)
-const TAVILY_API_KEY = "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";
+const TAVILY_API_KEY = process.env.TAVILY_API_KEY;
 
 // 3. THE HEALTH CHECK: Returns a list so the frontend doesn't crash on load
 app.get('/api/needs', (req, res) => {
