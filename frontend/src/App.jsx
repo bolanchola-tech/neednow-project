@@ -9,6 +9,7 @@ function App() {
   const [expandedId, setExpandedId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const pingSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3");
 
   useEffect(() => {
     const fetchNeeds = async () => {
@@ -29,6 +30,9 @@ function App() {
     try {
       const response = await axios.post(`${API}/needs`, { text: input });
       setNeeds(prev => [response.data, ...prev]);
+      if (response.data.results.some(r => r.relevance >= 80)) {
+  pingSound.play().catch(() => {});
+}
       setExpandedId(response.data.id);
       setInput("");
     } catch (e) {
