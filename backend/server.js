@@ -16,6 +16,10 @@ app.use(express.json());
 const TAVILY_API_KEY = "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";
 
 // 3. THE ENGINE: Explicitly handles the POST search
+// Add this temporary "Health Check"
+app.get('/api/needs', (req, res) => {
+  res.send("If you see this, the /api/needs path is working perfectly!");
+});
 app.post('/api/needs', async (req, res) => {
   const { text } = req.body;
   if (!text) return res.status(400).json({ error: "No text provided" });
